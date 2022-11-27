@@ -7,6 +7,7 @@ import EmbededSocmed from "../components/embeded";
 import SeeOther from "../components/seeother";
 import Captions from "../components/caption";
 import Tags from "../components/tags";
+import MeiliSearch from "meilisearch";
 
 const Post = () => {
   const [content, setContent] = useState("");
@@ -15,42 +16,36 @@ const Post = () => {
   const [tagsData, setTagsData] = useState("");
   const [postDate, setPostDate] = useState("");
   const [creator, setCreator] = useState("");
+  const [search, setSearch] = useState<any[]>([]);
+
   const router = useRouter();
   const { id } = router.query;
   let number = 0;
 
   const textDOM = (data: any) => {
-    if (data.includes("dn_readmore_list")){
-      setTest((old) => [
-        ...old,
-        <SeeOther/>
-      ])
-    }else if(data.includes("dn_readmore_image")){
-      var urlRegex = /((http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-]))/g;
-      let links = data.match(urlRegex)
-      setTest((old) => [
-        ...old,
-        <Iframely url={links[0]}/>
-      ])
-    }
-    else{
-      let spaces = data.split(" ")
-      spaces.map((details:any)=>{
-        if (details.substring(0,5)=="https"){
-          SosmedParser(details)
-          data.replace(details,' ')
+    if (data.includes("dn_readmore_list")) {
+      setTest((old) => [...old, <SeeOther />]);
+    } else if (data.includes("dn_readmore_image")) {
+      var urlRegex =
+        /((http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-]))/g;
+      let links = data.match(urlRegex);
+      setTest((old) => [...old, <Iframely url={links[0]} />]);
+    } else {
+      let spaces = data.split(" ");
+      spaces.map((details: any) => {
+        if (details.substring(0, 5) == "https") {
+          SosmedParser(details);
+          data.replace(details, " ");
           return;
           // console.log("gttps = "+details);
         }
-      })
+      });
 
-      if (data.includes("caption")){
+      if (data.includes("caption")) {
         return;
-      } 
-      if(data.substring(0,5).includes("<img")){
-        setTest((old) => [
-          ...old,
-        <Captions datas={data} />])
+      }
+      if (data.substring(0, 5).includes("<img")) {
+        setTest((old) => [...old, <Captions datas={data} />]);
         return;
       }
       setTest((old) => [
@@ -58,11 +53,7 @@ const Post = () => {
         <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data) }} />,
       ]);
       // console.log(data);
-
-      
     }
-    
-    
   };
 
   const SosmedParser = (data: any) => {
@@ -114,38 +105,79 @@ const Post = () => {
   const handleContent = async () => {
     await axios
       .get("http://localhost:1337/api/wordpresses?filters[slug]=" + id)
-      .then((resp) => {
+      .then(async (resp) => {
         let attr = resp.data.data[0]["attributes"];
+        let views = attr['views']
+        let id = resp.data.data[0]['id']
+
+        await axios.put('http://localhost:1337/api/wordpresses/'+id,{
+          "data": {
+            "views": views + 1
+          }
+        })
+
 
         let splitter = attr["content_encoded"].split("</p>");
         splitter.map((detail: any) => {
           handleParsing(detail + "</p>");
         });
+        
         setContent(attr["content_encoded"]);
         setTitle(attr["title"]);
         setPostDate(attr["pubDate"]);
         setCreator(attr["dc_creator"]);
-        setTagsData(attr["tag"])
+        setTagsData(attr["tag"]);
+        handleRelated()
       });
   };
+  let linkAuthor = "/author/" + creator;
 
+  const handleRelated = async () => {
+    const client = new MeiliSearch({
+      host: "http://127.0.0.1:7700",
+      apiKey: "MASTER_KEY",
+    });
+    const index = await client.getIndex("wordpress");
+    const booksData = await index.search(title,{limit:5});
+    setSearch(booksData.hits);
+  };
+  
+  
   useEffect(() => {
     handleContent();
   }, []);
   return (
     <div className="PostData">
-      <p className="TitlePost">{title} </p>
-      <p>
-        Author by {creator} at {postDate}
-      </p>
-      {/* <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }} /> */}
-      {
-        test.map((details:any)=>{
-          return(details)
-        })
-      }
-      <Tags tag={tagsData}/>
-      <hr />
+      <div className="row">
+        <div className="col-lg-8">
+          <p className="TitlePost">{title} </p>
+          <p>
+            Author by <a href={linkAuthor}>{creator}</a> at {postDate}
+          </p>
+          {/* <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }} /> */}
+          {test.map((details: any) => {
+            return details;
+          })}
+          <Tags tag={tagsData} />
+          <hr />
+        </div>
+        <div className="col-lg-4">
+          <div className="related">
+            <span>Related Post</span>
+            {
+              search.map((detail:any, index)=>{
+                console.log(detail);
+                
+                return(
+                  <div>
+                  <a key={index} href={`/post/`+detail.slug}>{detail.title}</a>
+                  </div>
+                )
+              })
+            }
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
