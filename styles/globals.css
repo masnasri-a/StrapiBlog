@@ -88,3 +88,16 @@ a {
   padding-top: 20px;
   width: 500px;
 }
+
+.CardListSeeOther{
+  justify-content: left;
+  border: 2px solid black;
+}
+
+.tags{
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border: 2px solid black;
+}

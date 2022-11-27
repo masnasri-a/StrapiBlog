@@ -7,7 +7,7 @@ export default function Home() {
 
   const handleSlug = async () => {
     await axios
-      .get("http://103.176.79.228:1337/api/wordpresses?fields=title%2C%20slug")
+      .get("http://localhost:1337/api/wordpresses?pagination%5Blimit%5D=100&fields=title%2Cslug")
       .then((resp) => {
         setData(resp.data.data);
       });
@@ -23,9 +23,6 @@ export default function Home() {
           let attr = detail["attributes"];
           let title = attr["title"];
           let slug = attr["slug"];
-
-          console.log("attr = ", title);
-
           return (
             <div className="cardPost" key={index}>
               <Link href={"/post/" + slug}>{title}</Link>
