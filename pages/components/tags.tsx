@@ -5,7 +5,6 @@ const Tags = (props: any) => {
     spliter = tags.split(", ");
   }
 
-  const handleLink = () => {};
 
   return (
     <>
@@ -16,6 +15,7 @@ const Tags = (props: any) => {
             {spliter.map((detail: any, index:any) => {
               let links =
                 "/tag/" + detail;
+                
               return (
                 <>
                   <div className="tags" key={index}>

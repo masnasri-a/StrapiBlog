@@ -19,7 +19,7 @@ const Post = () => {
   const [search, setSearch] = useState<any[]>([]);
 
   const router = useRouter();
-  const { id } = router.query;
+  let id: any;
   let number = 0;
 
   const textDOM = (data: any) => {
@@ -57,23 +57,82 @@ const Post = () => {
   };
 
   const SosmedParser = (data: any) => {
-    if (data.includes("instagram")) {
-      setTest((old) => [...old, <EmbededSocmed type="instagram" url={data} />]);
-    } else if (data.includes("twitter")) {
-      setTest((old) => [...old, <EmbededSocmed type="twitter" url={data} />]);
-    } else if (data.includes("tiktok")) {
-      setTest((old) => [...old, <EmbededSocmed type="tiktok" url={data} />]);
-    } else if (data.includes("facebook")) {
-      setTest((old) => [...old, <EmbededSocmed type="facebook" url={data} />]);
-    } else if (data.includes("youtube")) {
-      setTest((old) => [...old, <EmbededSocmed type="youtube" url={data} />]);
+    
+    if (data.includes("<p>") || data.includes("</p>")) {
+      
+      var re = /(<\/p>|<p>)/g;
+      data = data.replace(re, "");
+      console.log(data);
+      if (data.includes("instagram")) {
+        setTest((old) => [
+          ...old,
+          <EmbededSocmed type="instagram" url={data} />,
+        ]);
+      } else if (data.includes("twitter")) {
+        setTest((old) => [...old, <EmbededSocmed type="twitter" url={data} />]);
+      } else if (data.includes("tiktok")) {
+        setTest((old) => [...old, <EmbededSocmed type="tiktok" url={data} />]);
+      } else if (data.includes("facebook")) {
+        setTest((old) => [
+          ...old,
+          <EmbededSocmed type="facebook" url={data} />,
+        ]);
+      } else if (data.includes("youtube") || data.includes("youtu.be")) {
+        setTest((old) => [...old, <EmbededSocmed type="youtube" url={data} />]);
+      } else {
+        setTest((old) => [
+          ...old,
+          <div
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data) }}
+          />,
+        ]);
+      }
+    } else {
+      if (data.includes("instagram")) {
+        setTest((old) => [
+          ...old,
+          <EmbededSocmed type="instagram" url={data} />,
+        ]);
+      } else if (data.includes("twitter")) {
+        setTest((old) => [...old, <EmbededSocmed type="twitter" url={data} />]);
+      } else if (data.includes("tiktok")) {
+        setTest((old) => [...old, <EmbededSocmed type="tiktok" url={data} />]);
+      } else if (data.includes("facebook")) {
+        setTest((old) => [
+          ...old,
+          <EmbededSocmed type="facebook" url={data} />,
+        ]);
+      } else if (data.includes("youtube") || data.includes("youtu.be")) {
+        setTest((old) => [...old, <EmbededSocmed type="youtube" url={data} />]);
+      } else {
+        setTest((old) => [
+          ...old,
+          <div
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data) }}
+          />,
+        ]);
+      }
     }
   };
 
   const spliterTag = (data: any) => {
     let splits = data.split("\n");
     splits.map((detail: any) => {
-      if (detail.substring(0, 5) == "https") {
+      // console.log(detail);
+      if (detail.substring(0, 7) == "<figure") {
+        let reg = new RegExp(
+          /(https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/
+        );
+        let tests = reg.exec(detail);
+        // console.log(tests![0]);
+        SosmedParser(tests![0]);
+        return;
+      }
+
+      if (
+        detail.substring(0, 5) == "https" ||
+        detail.substring(0, 8) == "<p>https"
+      ) {
         SosmedParser(detail);
       } else {
         textDOM(detail);
@@ -103,32 +162,33 @@ const Post = () => {
   };
 
   const handleContent = async () => {
-    await axios
-      .get("http://localhost:1337/api/wordpresses?filters[slug]=" + id)
-      .then(async (resp) => {
+    let links = "http://localhost:1337/api/wordpresses?filters[slug]=" + id;
+    await axios.get(links).then(async (resp) => {
+      console.log(links);
+      if (resp.data.data[0]) {
         let attr = resp.data.data[0]["attributes"];
-        let views = attr['views']
-        let id = resp.data.data[0]['id']
+        let views = attr["views"];
+        let id = resp.data.data[0]["id"];
 
-        await axios.put('http://localhost:1337/api/wordpresses/'+id,{
-          "data": {
-            "views": views + 1
-          }
-        })
-
+        await axios.put("http://localhost:1337/api/wordpresses/" + id, {
+          data: {
+            views: views + 1,
+          },
+        });
 
         let splitter = attr["content_encoded"].split("</p>");
         splitter.map((detail: any) => {
           handleParsing(detail + "</p>");
         });
-        
+
         setContent(attr["content_encoded"]);
         setTitle(attr["title"]);
         setPostDate(attr["pubDate"]);
         setCreator(attr["dc_creator"]);
         setTagsData(attr["tag"]);
-        handleRelated()
-      });
+        handleRelated();
+      }
+    });
   };
   let linkAuthor = "/author/" + creator;
 
@@ -138,14 +198,17 @@ const Post = () => {
       apiKey: "MASTER_KEY",
     });
     const index = await client.getIndex("wordpress");
-    const booksData = await index.search(title,{limit:5});
+    const booksData = await index.search(title, { limit: 5 });
     setSearch(booksData.hits);
   };
-  
-  
+
   useEffect(() => {
+    if (router.asPath !== router.route) {
+      id = router.query.id;
+      console.log(id);
+    }
     handleContent();
-  }, []);
+  }, [router.isReady]);
   return (
     <div className="PostData">
       <div className="row">
@@ -164,17 +227,17 @@ const Post = () => {
         <div className="col-lg-4">
           <div className="related">
             <span>Related Post</span>
-            {
-              search.map((detail:any, index)=>{
-                console.log(detail);
-                
-                return(
-                  <div>
-                  <a key={index} href={`/post/`+detail.slug}>{detail.title}</a>
-                  </div>
-                )
-              })
-            }
+            {search.map((detail: any, index) => {
+              console.log(detail);
+
+              return (
+                <div>
+                  <a key={index} href={`/post/` + detail.slug}>
+                    {detail.title}
+                  </a>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
