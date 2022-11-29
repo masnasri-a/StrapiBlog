@@ -11,7 +11,7 @@ const Category = () => {
   const handleSlug = async () => {
     await axios
       .get(
-        "http://localhost:1337/api/wordpresses?filters[category]=" + category
+        "http://0.0.0.0:1337/api/wordpresses?filters[category]=" + category
       )
       .then((resp) => {
         console.log(resp.data);

@@ -11,7 +11,7 @@ const Author = () => {
   const handleSlug = async () => {
     await axios
       .get(
-        "http://localhost:1337/api/wordpresses?filters[dc_creator]=" + dc_author
+        "http://0.0.0.0:1337/api/wordpresses?filters[dc_creator]=" + dc_author
       )
       .then((resp) => {
         console.log(resp.data);

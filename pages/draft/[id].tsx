@@ -8,10 +8,12 @@ import SeeOther from "../components/seeother";
 import Captions from "../components/caption";
 import Tags from "../components/tags";
 import MeiliSearch from "meilisearch";
+import Image from "next/image";
 
 const Post = () => {
   const [content, setContent] = useState("");
   const [test, setTest] = useState<any[]>([]);
+  const [banner, setBanner] = useState("");
   const [title, setTitle] = useState("");
   const [tagsData, setTagsData] = useState("");
   const [postDate, setPostDate] = useState("");
@@ -57,9 +59,7 @@ const Post = () => {
   };
 
   const SosmedParser = (data: any) => {
-    
     if (data.includes("<p>") || data.includes("</p>")) {
-      
       var re = /(<\/p>|<p>)/g;
       data = data.replace(re, "");
       console.log(data);
@@ -162,13 +162,13 @@ const Post = () => {
   };
 
   const handleContent = async () => {
-    let links = "http://0.0.0.0:1337/api/wordpresses?filters[slug]=" + id;
+    let links = "http://0.0.0.0:1337/api/wordpresses/" + id + "?populate=*";
     await axios.get(links).then(async (resp) => {
-      console.log(links);
-      if (resp.data.data[0]) {
-        let attr = resp.data.data[0]["attributes"];
+      console.log("links = " + links);
+      if (resp.data.data) {
+        let attr = resp.data.data["attributes"];
         let views = attr["views"];
-        let id = resp.data.data[0]["id"];
+        let id = resp.data.data["id"];
 
         await axios.put("http://0.0.0.0:1337/api/wordpresses/" + id, {
           data: {
@@ -180,7 +180,10 @@ const Post = () => {
         splitter.map((detail: any) => {
           handleParsing(detail + "</p>");
         });
-
+        if (attr["Banner"]) {
+          let banners = attr.Banner.data.attributes.url;
+          setBanner(banners);
+        }
         setContent(attr["content_encoded"]);
         setTitle(attr["title"]);
         setPostDate(attr["pubDate"]);
@@ -206,14 +209,15 @@ const Post = () => {
     if (router.asPath !== router.route) {
       id = router.query.id;
       console.log(id);
+      handleContent();
     }
-    handleContent();
   }, [router.isReady]);
   return (
     <div className="PostData">
       <div className="row">
         <div className="col-lg-8">
           <p className="TitlePost">{title} </p>
+          {banner ? <Image src={banner} width={900} height={300} alt="banner-blog" /> : <></>}
           <p>
             Author by <a href={linkAuthor}>{creator}</a> at {postDate}
           </p>

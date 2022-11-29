@@ -75,7 +75,7 @@ a {
   margin-top: 100px;
 }
 .PostData p{
-  text-align: center;
+  /* text-align: center; */
 }
 
 .TitlePost{
@@ -103,7 +103,7 @@ a {
 }
 
 .related{
-  
+
   border: 2px solid black;
 
 }

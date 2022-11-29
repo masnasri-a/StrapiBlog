@@ -9,7 +9,7 @@ const Author = () => {
   const [data, setData] = useState([]);
 
   const handleSlug = async () => {
-    let  links = await "http://localhost:1337/api/wordpresses?filters%5Btag%5D[$contains]=" + tag
+    let  links = await "http://0.0.0.0:1337/api/wordpresses?filters%5Btag%5D[$contains]=" + tag
     await axios
       .get(
         links
