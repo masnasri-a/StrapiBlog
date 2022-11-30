@@ -28,7 +28,7 @@ const Upload = () => {
                   "slug": title.toLowerCase().replace(/ /g,'-')
                 }
               }
-              await axios.post('http://0.0.0.0:1337/api/wordpresses',model).then((resp)=> {
+              await axios.post('http://'+process.env.NEXT_PUBLIC_STRAPI_HOST+':1337/api/wordpresses',model).then((resp)=> {
                 alert('post success')
               }).catch((err)=> {
                 alert('failed')

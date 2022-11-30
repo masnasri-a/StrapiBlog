@@ -12,7 +12,7 @@ export default function Home() {
 
   const fetchData = async (param: any) => {
     const client = new MeiliSearch({
-      host: "http://0.0.0.0:7700",
+      host: "http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":7700",
       apiKey: "MASTER_KEY",
     });
     const index = await client.getIndex("wordpress");
@@ -24,9 +24,11 @@ export default function Home() {
   };
 
   const handleSlug = async () => {
+    console.log(process.env.NEXT_PUBLIC_STRAPI_HOST);
+    
     await axios
       .get(
-        "http://0.0.0.0:1337/api/wordpresses?pagination%5Blimit%5D=100&fields=title%2Cslug"
+        "http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":1337/api/wordpresses?pagination%5Blimit%5D=100&fields=title%2Cslug"
       )
       .then((resp) => {
         console.log(resp);
@@ -42,7 +44,7 @@ export default function Home() {
   };
 
   const handlePopular = async()=>{
-    let url = 'http://0.0.0.0:1337/api/wordpresses?pagination%5BpageSize%5D=5&sort[0]=views%3Adesc'
+    let url = 'http://'+process.env.NEXT_PUBLIC_STRAPI_HOST+':1337/api/wordpresses?pagination%5BpageSize%5D=5&sort[0]=views%3Adesc'
     await axios
       .get(
         url
@@ -53,7 +55,7 @@ export default function Home() {
   }
 
   const handlePilihan = async()=>{
-    let url = 'http://0.0.0.0:1337/api/wordpresses?filters[type]=artikel pilihan'
+    let url = 'http://'+process.env.NEXT_PUBLIC_STRAPI_HOST+':1337/api/wordpresses?filters[type]=artikel pilihan'
     await axios
       .get(
         url

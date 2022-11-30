@@ -11,7 +11,7 @@ const SubCategory = () => {
   const handleSlug = async () => {
     await axios
       .get(
-        "http://0.0.0.0:1337/api/wordpresses?filters[sub_category]=" + subcategory
+        "http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":1337/api/wordpresses?filters[sub_category]=" + subcategory
       )
       .then((resp) => {
         console.log(resp.data);

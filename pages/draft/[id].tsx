@@ -43,9 +43,9 @@ const Post = () => {
         }
       });
 
-      if (data.includes("caption")) {
-        return;
-      }
+      // if (data.includes("caption")) {
+      //   return;
+      // }
       if (data.substring(0, 5).includes("<img")) {
         setTest((old) => [...old, <Captions datas={data} />]);
         return;

@@ -41,9 +41,9 @@ const Post = () => {
         }
       });
 
-      if (data.includes("caption")) {
-        return;
-      }
+      // if (data.includes("caption")) {
+      //   return;
+      // }
       if (data.substring(0, 5).includes("<img")) {
         setTest((old) => [...old, <Captions datas={data} />]);
         return;
@@ -162,7 +162,7 @@ const Post = () => {
   };
 
   const handleContent = async () => {
-    let links = "http://0.0.0.0:1337/api/wordpresses?filters[slug]=" + id;
+    let links = "http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":1337/api/wordpresses?filters[slug]=" + id;
     await axios.get(links).then(async (resp) => {
       console.log(links);
       if (resp.data.data[0]) {
@@ -170,7 +170,7 @@ const Post = () => {
         let views = attr["views"];
         let id = resp.data.data[0]["id"];
 
-        await axios.put("http://0.0.0.0:1337/api/wordpresses/" + id, {
+        await axios.put("http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":1337/api/wordpresses/" + id, {
           data: {
             views: views + 1,
           },
@@ -194,7 +194,7 @@ const Post = () => {
 
   const handleRelated = async () => {
     const client = new MeiliSearch({
-      host: "http://0.0.0.0:7700",
+      host: "http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":7700",
       apiKey: "MASTER_KEY",
     });
     const index = await client.getIndex("wordpress");
