@@ -11,7 +11,7 @@ const Category = () => {
   const handleSlug = async () => {
     await axios
       .get(
-        "http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":1337/api/wordpresses?filters[category]=" + category
+        "http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":1337/api/articles?filters[category]=" + category
       )
       .then((resp) => {
         console.log(resp.data);

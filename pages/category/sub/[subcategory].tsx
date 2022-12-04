@@ -5,13 +5,17 @@ import { useEffect, useState } from "react";
 
 const SubCategory = () => {
   const router = useRouter();
-  const { subcategory } = router.query;
+  let subcategory:any;
   const [data, setData] = useState([]);
 
   const handleSlug = async () => {
     await axios
       .get(
-        "http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":1337/api/wordpresses?filters[sub_category]=" + subcategory
+        "http://" +
+          process.env.NEXT_PUBLIC_STRAPI_HOST +
+          ":1337/api/articles?filters[sub_category][sub_category_name][$contains]=" +
+          subcategory +
+          "&populate=*"
       )
       .then((resp) => {
         console.log(resp.data);
@@ -20,7 +24,12 @@ const SubCategory = () => {
       });
   };
 
+
   useEffect(() => {
+    if (router.asPath !== router.route) {
+      subcategory = router.query.subcategory;
+      console.log(subcategory);
+    }
     const fetchSomething = async () => {
       await fetch(`/category/sub/${subcategory}`).then((resp: any) => {
         handleSlug();
@@ -28,7 +37,7 @@ const SubCategory = () => {
       handleSlug();
     };
     fetchSomething();
-  }, []);
+  }, [router.isReady]);
   return (
     <>
       <span>List Article bySub Category {subcategory}</span>

@@ -19,7 +19,7 @@ const Post = () => {
   const [search, setSearch] = useState<any[]>([]);
 
   const router = useRouter();
-  let id: any;
+  let slug: any;
   let number = 0;
 
   const textDOM = (data: any) => {
@@ -162,29 +162,30 @@ const Post = () => {
   };
 
   const handleContent = async () => {
-    let links = "http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":1337/api/wordpresses?filters[slug]=" + id;
+    let links = "http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":1337/api/articles?filters[slug]=" + slug+"&populate=*";
     await axios.get(links).then(async (resp) => {
       console.log(links);
       if (resp.data.data[0]) {
         let attr = resp.data.data[0]["attributes"];
         let views = attr["views"];
         let id = resp.data.data[0]["id"];
-
-        await axios.put("http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":1337/api/wordpresses/" + id, {
+        console.log(id);
+        
+        await axios.put("http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":1337/api/articles/" + id, {
           data: {
             views: views + 1,
           },
         });
 
-        let splitter = attr["content_encoded"].split("</p>");
+        let splitter = attr["content"].split("</p>");
         splitter.map((detail: any) => {
           handleParsing(detail + "</p>");
         });
 
-        setContent(attr["content_encoded"]);
+        setContent(attr["content"]);
         setTitle(attr["title"]);
-        setPostDate(attr["pubDate"]);
-        setCreator(attr["dc_creator"]);
+        setPostDate(attr["author"]["data"]["attributes"]["publishedAt"]);
+        setCreator(attr["author"]["data"]["attributes"]["author_name"]);
         setTagsData(attr["tag"]);
         handleRelated();
       }
@@ -194,18 +195,18 @@ const Post = () => {
 
   const handleRelated = async () => {
     const client = new MeiliSearch({
-      host: "http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":7700",
+      host: "http://"+process.env.NEXT_PUBLIC_MEILISEARCH+":7700",
       apiKey: "MASTER_KEY",
     });
-    const index = await client.getIndex("wordpress");
+    const index = await client.getIndex("article");
     const booksData = await index.search(title, { limit: 5 });
     setSearch(booksData.hits);
   };
 
   useEffect(() => {
     if (router.asPath !== router.route) {
-      id = router.query.id;
-      console.log(id);
+      slug = router.query.slug;
+      console.log(slug);
     }
     handleContent();
   }, [router.isReady]);

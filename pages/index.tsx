@@ -28,7 +28,7 @@ export default function Home() {
     
     await axios
       .get(
-        "http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":1337/api/wordpresses?pagination%5Blimit%5D=100&fields=title%2Cslug"
+        "http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":1337/api/articles?pagination%5Blimit%5D=100&fields=title%2Cslug"
       )
       .then((resp) => {
         console.log(resp);
@@ -44,7 +44,7 @@ export default function Home() {
   };
 
   const handlePopular = async()=>{
-    let url = 'http://'+process.env.NEXT_PUBLIC_STRAPI_HOST+':1337/api/wordpresses?pagination%5BpageSize%5D=5&sort[0]=views%3Adesc'
+    let url = 'http://'+process.env.NEXT_PUBLIC_STRAPI_HOST+':1337/api/articles?pagination%5BpageSize%5D=5&sort[0]=views%3Adesc'
     await axios
       .get(
         url
@@ -55,7 +55,7 @@ export default function Home() {
   }
 
   const handlePilihan = async()=>{
-    let url = 'http://'+process.env.NEXT_PUBLIC_STRAPI_HOST+':1337/api/wordpresses?filters[type]=artikel pilihan'
+    let url = 'http://'+process.env.NEXT_PUBLIC_STRAPI_HOST+':1337/api/articles?filters[type]=artikel pilihan'
     await axios
       .get(
         url

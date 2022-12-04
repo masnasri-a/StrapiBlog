@@ -162,7 +162,7 @@ const Post = () => {
   };
 
   const handleContent = async () => {
-    let links = "http://0.0.0.0:1337/api/wordpresses/" + id + "?populate=*";
+    let links = "http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":1337/api/articles/" + id + "?populate=*";
     await axios.get(links).then(async (resp) => {
       console.log("links = " + links);
       if (resp.data.data) {
@@ -170,7 +170,7 @@ const Post = () => {
         let views = attr["views"];
         let id = resp.data.data["id"];
 
-        await axios.put("http://0.0.0.0:1337/api/wordpresses/" + id, {
+        await axios.put("http://"+process.env.NEXT_PUBLIC_STRAPI_HOST+":1337/api/articles/" + id, {
           data: {
             views: views + 1,
           },
@@ -200,7 +200,7 @@ const Post = () => {
       host: "http://0.0.0.0:7700",
       apiKey: "MASTER_KEY",
     });
-    const index = await client.getIndex("wordpress");
+    const index = await client.getIndex("article");
     const booksData = await index.search(title, { limit: 5 });
     setSearch(booksData.hits);
   };

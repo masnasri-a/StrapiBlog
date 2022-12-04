@@ -5,7 +5,7 @@ const SeeOther = (props:any) => {
     const [data, setData] = useState<any[]>([])
 
     const handleLoad = async() =>{
-        await axios.get('http://'+process.env.NEXT_PUBLIC_STRAPI_HOST+':1337/api/wordpresses?pagination%5BwithCount%5D=false&pagination%5Blimit%5D=3&fields=title%2C%20slug').then((resp)=>{
+        await axios.get('http://'+process.env.NEXT_PUBLIC_STRAPI_HOST+':1337/api/articles?pagination%5BwithCount%5D=false&pagination%5Blimit%5D=3&fields=title%2C%20slug').then((resp)=>{
             resp.data.data.map((detail:any) => {
                 console.log(detail.attributes);
                 setData(old => [...old, detail.attributes])
